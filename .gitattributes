@@ -1,0 +1,3 @@
+**/edr_target/*.html linguist-generated=true
+**/edr_target/*.json linguist-generated=true
+**/node_modules/** linguist-vendored=true
