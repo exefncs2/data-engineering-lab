@@ -1,47 +1,82 @@
-# Data Engineering & Modern Data Stack Lab
+# Data Engineering & Modern Data Stack Lab（資料工程學習與實作報告）
 
-這份 Repo 是我整理自己研究現代資料工程（Modern Data Stack）與相關工具時留下的**實作實驗與調研筆記集合**，涵蓋排程編排、dbt 資料轉換與品質監控、雲端儲存串接、RAG 實驗，以及多個分散式查詢引擎的比較紀錄。
+> 本 Repo 整理自我在工作與自學過程中可公開的資料工程實驗、POC 程式碼與技術調研筆記，定位為**個人學習報告與實作紀錄庫**。
 
-## 1. 為什麼這樣整理這份 Repo
+## 1. 版本與整理歷程
 
-這些程式碼與筆記是不同時期為了驗證個別技術環節寫下來的 POC（概念驗證），原本全散在根目錄下、中英文夾雜。整理後依照資料工程的工作階段分成四塊，方便自己回頭翻找，也讓外部讀者能一眼看出每個子資料夾的目的：
-
-- **`01-orchestration/`（排程與轉換比較）**：實際把 Airflow、Prefect、Dagster 三套排程器分別跑過一輪，並對接 dbt 與 Elementary Data 觀察資料品質報表。
-  - **Airflow + dbt**：生態最完整、企業最常見，但本機容器啟動較重。
-  - **Prefect + dbt**：對原生 Python 函式最友善，寫起來最輕快。
-  - **Dagster**：從資料資產（Asset）與血緣角度切入，測試與依賴關係最直覺。
-- **`02-cloud-storage/`（雲端儲存串接）**：驗證在 GCP 環境下以 FastAPI 建上傳閘道寫入 GCS Bucket，並搭配獨立的二進位上傳／下載 CLI 工具；閘道服務拆成三檔分離，兩個單純 CLI 工具則維持單檔避免過度設計。
-- **`03-ai-rag/`（檢索與向量資料庫實驗）**：測試把 LangChain、GCP Secret Manager、PostgreSQL 與 OpenAI Embeddings 打包成套件結構，以及測試 Pinecone 的稠密＋稀疏混合加權檢索公式。
-- **`docs/`（查詢引擎與架構筆記）**：比較 Trino vs. Presto、Presto 接 BigQuery、Redshift 實測數據與 SQL 資料庫選型心得。
+- **2023/10/02（v1.0.1）**：從工作實驗移植並刪去不需要的部分，遮蔽所有敏感資訊（帳號、密碼、IP、資料庫名稱等）。
+- **2024/03/28**：新增 `airflow-dbt`（原 `airflow_docker`）的 dbt + Elementary 實作範例，並排除敏感設定與清理部分文字。
+- **2026/11（結構與規範統一）**：完成當初列在「待處理」的幾項整理——依資料工程階段重整英文目錄結構、清除 `node_modules` 與壞掉的舊空指標、移除編輯器暫存檔、統一純繁體中文與套件安全版本，並補齊 GCS 模組的三檔分離與測試。
 
 ---
 
-## 2. 目前定位與使用提醒
+## 2. 學習主題與架構整理心得
 
-- 本 Repo 的定位是**個人技術實驗室與筆記庫**，並非單一可一鍵啟動的完整產品；各子專案各自獨立，需進到對應資料夾依照其內部說明與 `.env.example` 啟動。
-- 所有範例皆已移除原本的帳密、IP 與正式專案名稱，僅保留去識別化設定範本。
+整份學習紀錄依照現代資料工程（Modern Data Stack）的常見環節分成四大區塊：
+
+### (1) 排程編排與資料轉換比較（`01-orchestration/`）
+為了搞清楚實務上不同排程器跟 dbt 整合起來的體感差異，分別實作了三個環境：
+- **Airflow + dbt + Elementary（`airflow-dbt` / `airflow-basics`）**：企業最普及、Operator 生態最完整，搭配 Elementary Data 可以直接產出資料品質報表；缺點是本機容器啟動與設定相對較重。
+- **Prefect + dbt（`prefect-dbt`）**：寫法最貼近原生 Python 函式，開發體驗輕快，部署結構比 Airflow 單純。
+- **Dagster（`dagster`）**：以資料資產（Asset）而非單純任務順序為核心，思考資料血緣與單元測試時最直覺。
+
+### (2) 雲端儲存與 API 閘道實驗（`02-cloud-storage/gcs-buckets/`）
+驗證在 GCP（搭配 PVC／內部網路）環境下，如何透過 FastAPI 建立二進位檔案上傳閘道寫入 Google Cloud Storage，並搭配獨立的上傳／下載 CLI 小工具。整理時將上傳閘道改為「參數（`config.py`）／核心（`storage_service.py`）／進入點（`main.py`）」三檔分離，而單純的 `upload_file.py` 與 `get_file.py` 維持單檔工具。
+
+### (3) AI 檢索與向量資料庫實驗（`03-ai-rag/`）
+- **`rag-chain/`**：練習把資料庫連線、GCP Secret Manager、OpenAI Embeddings 與文字切塊拆成標準 Python 套件結構。
+- **`vector-db/`**：實驗 Pinecone 的稠密向量（Dense）與稀疏向量（Sparse）混合檢索公式（`alpha * dense + (1 - alpha) * sparse`）與基本 CRUD 操作。
+
+### (4) 查詢引擎與架構調研報告（`docs/`）
+整理在評估分散式查詢引擎與資料倉儲時的比較與實測筆記：
+- **查詢引擎比較**：[Trino vs. Presto 比較](docs/architecture-research/trino-vs-presto.md) · [Trino 安裝](docs/architecture-research/trino-installation.md) · [Presto 安裝](docs/architecture-research/presto-installation.md)
+- **雲端資料倉儲**：[Presto 連接 BigQuery](docs/architecture-research/presto-bigquery-connector.md) · [Presto 查詢筆記](docs/architecture-research/presto-query-guide.md) · [Redshift 實測結果](docs/architecture-research/redshift-benchmark.md) · [SQL 資料庫選型](docs/architecture-research/sql-database-selection.md)
+- **LLM 與前端筆記**：[LangChain 筆記](docs/architecture-research/langchain-notes.md) · [RAG 系統架構](docs/architecture-research/rag-architecture.md) · [Vue 3 + Axios 筆記](docs/architecture-research/vue3-axios-notes.md)
+- **系統構想文件**：[OrbitCommune 架構構想（中文）](docs/system-proposals/orbit-commune-zh.md) · [OrbitCommune Proposal（EN）](docs/system-proposals/orbit-commune-en.md)
 
 ---
 
-## 3. 目錄與文件索引
+## 3. 目錄總覽
 
 ```text
 data-engineering-lab/
 ├── 01-orchestration/
-│   ├── airflow-dbt/          # Airflow + dbt + Elementary + BigQuery 容器整合
-│   ├── airflow-basics/       # Airflow 基礎安裝與介面筆記
+│   ├── airflow-dbt/          # Airflow + dbt + Elementary + BigQuery Docker Compose 實例
+│   ├── airflow-basics/       # Airflow 基礎安裝與操作筆記
 │   ├── dagster/              # Dagster Asset 編排、排程與測試範例
-│   └── prefect-dbt/          # Prefect + dbt 容器整合範本
+│   └── prefect-dbt/          # Prefect + dbt Docker Compose 整合範本
 ├── 02-cloud-storage/
-│   └── gcs-buckets/          # FastAPI GCS 上傳閘道（config / storage_service / main）與 CLI 工具
+│   └── gcs-buckets/          # FastAPI GCS 上傳閘道（三檔分離）與單檔 CLI 工具
 ├── 03-ai-rag/
 │   ├── rag-chain/            # LangChain RAG 套件化結構實驗
-│   └── vector-db/            # Pinecone Dense + Sparse 混合檢索腳本
+│   └── vector-db/            # Pinecone Dense + Sparse 混合檢索實驗
 └── docs/
-    ├── architecture-research/ # Trino / Presto / BigQuery / Redshift / SQL 選型 / RAG / Vue 3 筆記
-    └── system-proposals/      # OrbitCommune 系統架構構想（中／英）
+    ├── architecture-research/ # 查詢引擎、資料倉儲、RAG 與前端研究筆記
+    └── system-proposals/      # 系統架構構想文件
 ```
 
-### 研究筆記快速連結
-- **查詢引擎與倉儲**：[Trino vs. Presto 比較](docs/architecture-research/trino-vs-presto.md) · [Trino 安裝](docs/architecture-research/trino-installation.md) · [Presto 安裝](docs/architecture-research/presto-installation.md) · [Presto 連接 BigQuery](docs/architecture-research/presto-bigquery-connector.md) · [Presto 查詢筆記](docs/architecture-research/presto-query-guide.md) · [Redshift 實測](docs/architecture-research/redshift-benchmark.md) · [SQL 資料庫選型](docs/architecture-research/sql-database-selection.md)
-- **LLM 與前端筆記**：[LangChain 筆記](docs/architecture-research/langchain-notes.md) · [RAG 系統架構](docs/architecture-research/rag-architecture.md) · [Vue 3 + Axios 筆記](docs/architecture-research/vue3-axios-notes.md)
+---
+
+## 4. 正式使用方式
+
+本 Repo 內各子專案互相獨立，請進入想執行的子目錄並依該目錄內的 README 與 `.env.example` 設定環境變數後啟動：
+
+```bash
+# 範例 1：啟動 Airflow + dbt 容器環境
+cd 01-orchestration/airflow-dbt
+docker compose up -d
+
+# 範例 2：啟動 Prefect + dbt 容器環境
+cd 01-orchestration/prefect-dbt/prefect_docker
+docker compose up -d
+
+# 範例 3：啟動 GCS 上傳閘道（先設定 GCS_BUCKET_NAME 與金鑰環境變數）
+cd 02-cloud-storage/gcs-buckets
+cp .env.example .env
+python main.py
+
+# 執行 GCS 設定單元測試
+python -m unittest discover -s tests -v
+```
+
+> **安全提醒**：所有範例皆已遮蔽原本的帳號、密碼、IP 與正式專案名稱，執行前請自行填入對應的本機或測試環境參數。
