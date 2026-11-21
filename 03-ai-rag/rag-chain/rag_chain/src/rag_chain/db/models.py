@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Integer, String, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from .database import Base  # 假設你的 database.py 文件中定義了 Base
 

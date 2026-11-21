@@ -1,4 +1,4 @@
-from dagster import schedule, ScheduleEvaluationContext, RunRequest, job, op, Any, In, sensor,Out
+from dagster import schedule, ScheduleEvaluationContext, RunRequest, job, op, Any, sensor, Out
 import http.client
 
 # 定義呼叫 API 的操作

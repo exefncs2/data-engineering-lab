@@ -1,6 +1,5 @@
-# rag_chain/db/database.py
+"""SQLAlchemy ORM 宣告基底定義（SQLAlchemy 2.0 標準匯入）。"""
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
-

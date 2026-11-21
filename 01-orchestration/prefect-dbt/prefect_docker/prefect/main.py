@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 # Main.py
-from prefect import Flow,serve
+from prefect import serve
 
 
 # 註冊 Flow1 和 Flow2

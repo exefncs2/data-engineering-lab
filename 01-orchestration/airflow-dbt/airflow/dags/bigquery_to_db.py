@@ -7,7 +7,6 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator,
     BigQueryInsertJobOperator
 )
-from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 from airflow.utils.dates import days_ago
 from airflow.operators.python_operator import PythonOperator
