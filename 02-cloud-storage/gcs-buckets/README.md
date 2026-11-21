@@ -1,23 +1,24 @@
-# buckets站點API
+# GCS Upload Gateway & CLI Tools
 
-## 使用python fastAPI建立站點
-! 此站點必須建立在Google GCP上，並建立PVC網路
+基於 FastAPI 的 Google Cloud Storage 上傳閘道，採**三檔分離架構**，並附帶兩個獨立單檔 CLI 小工具。
 
-### [fastAPI檔](main.py) 建立一個upload站點進行處理
-* 參數給dir名可以用登入等等做設定，這裡直接作為參數傳送
+## 檔案架構
 
-* 上傳檔案在特定位置用字串給予可以用瀏覽器上傳後直接使用。
+```text
+gcs-buckets/
+├── config.py           # 參數設定檔：不可變 GcsConfig 與環境變數 Fail Fast 驗證
+├── storage_service.py  # 核心邏輯檔：封裝 GCS 串流上傳與下載操作
+├── main.py             # 呼叫進入點：FastAPI 上傳 API 路由
+├── get_file.py         # 單檔 CLI 小工具：下載單一 GCS 物件
+├── upload_file.py      # 單檔 CLI 小工具：呼叫上傳 API 傳送本機檔案
+└── tests/              # 設定單元測試
+```
 
-* 檔案檔名直接搬用，也能用其他固定檔名代替。
+## 快速開始
 
-* 參數與檔案最後串成字串
-  '{dir}/{file.filename}'
+```bash
+export GCS_BUCKET_NAME="your-bucket-name"
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 
-### 使用[upload_file](upload_file.py)進行連接呼叫把檔案上傳
-透過建好的API上傳檔案，用2進制大部分檔案都支援。
-* 上傳檔案會用2進制open('rb')
-
-
-### 使用[get_file](get_file.py) 直接從buckets下取得檔案
-直接使用GCP的基本驗證取得資料(目前設定似乎只有取得檔案可以不用驗證檔上傳不行)
-* 這裡用預設認證方式可以直接通過進行下載
+python main.py
+```

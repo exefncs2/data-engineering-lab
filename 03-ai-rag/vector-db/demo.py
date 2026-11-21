@@ -1,4 +1,4 @@
-"""Pinecone hybrid (dense + sparse) vector search & CRUD experiment."""
+"""輕量單檔實驗腳本：Pinecone 稠密＋稀疏（Hybrid）混合向量檢索與 CRUD 示範。"""
 
 from __future__ import annotations
 
@@ -10,7 +10,12 @@ from typing import Dict, List, Tuple
 import pinecone
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
-logger = logging.getLogger("pinecone_hybrid_demo")
+logger = logging.getLogger(__name__)
+
+DENSE_DIMENSION = 16
+SPARSE_VOCAB_SIZE = 100
+DEFAULT_HYBRID_ALPHA = 0.75
+DEFAULT_NAMESPACE = "example-namespace"
 
 
 def hybrid_score_norm(
@@ -18,14 +23,14 @@ def hybrid_score_norm(
     sparse: Dict[str, List],
     alpha: float,
 ) -> Tuple[List[float], Dict[str, List]]:
-    """Scale dense and sparse vectors for convex hybrid search (`alpha * dense + (1 - alpha) * sparse`)."""
+    """依凸組合公式（alpha * dense + (1 - alpha) * sparse）縮放混合檢索權重。"""
     if not 0.0 <= alpha <= 1.0:
-        raise ValueError("alpha must be between 0 and 1")
+        raise ValueError("權重參數 alpha 必須介於 0.0 與 1.0 之間")
     scaled_sparse = {
         "indices": sparse["indices"],
-        "values": [v * (1.0 - alpha) for v in sparse["values"]],
+        "values": [value * (1.0 - alpha) for value in sparse["values"]],
     }
-    scaled_dense = [v * alpha for v in dense]
+    scaled_dense = [value * alpha for value in dense]
     return scaled_dense, scaled_sparse
 
 
@@ -34,9 +39,9 @@ def generate_random_sparse_vector(
     min_value: float = 0.0,
     max_value: float = 1.0,
 ) -> Dict[str, List]:
-    """Generate a random sparse vector with unique sorted indices."""
-    k = random.randint(1, min(10, vocab_size))
-    indices = sorted(random.sample(range(vocab_size), k))
+    """產生索引不重複且已排序的隨機稀疏向量。"""
+    sample_size = random.randint(1, min(10, vocab_size))
+    indices = sorted(random.sample(range(vocab_size), sample_size))
     values = [random.uniform(min_value, max_value) for _ in indices]
     return {"indices": indices, "values": values}
 
@@ -46,54 +51,56 @@ def generate_random_dense_vector(
     min_value: float = 0.0,
     max_value: float = 1.0,
 ) -> List[float]:
-    """Generate a random dense vector of fixed `dimension`."""
+    """產生指定維度的隨機稠密向量。"""
     return [random.uniform(min_value, max_value) for _ in range(dimension)]
 
 
 def main() -> None:
-    api_key = os.getenv("PINECONE_API_KEY")
+    """執行 Pinecone 索引寫入、混合檢索、更新與刪除示範。"""
+    api_key = os.getenv("PINECONE_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("請先設定環境變數 PINECONE_API_KEY 再執行示範腳本")
+
     environment = os.getenv("PINECONE_ENVIRONMENT", "us-west4-gcp-free")
     index_name = os.getenv("PINECONE_INDEX", "test")
-    namespace = "example-namespace"
-
-    if not api_key:
-        raise RuntimeError("Please set PINECONE_API_KEY environment variable before running this demo.")
 
     pinecone.init(api_key=api_key, environment=environment)
-    logger.info("Available indexes: %s", pinecone.list_indexes())
+    logger.info("目前可用索引：%s", pinecone.list_indexes())
 
     index = pinecone.Index(index_name)
-    logger.info("Index stats: %s", index.describe_index_stats())
+    logger.info("索引統計資訊：%s", index.describe_index_stats())
 
-    # 1. Upsert sample dense + sparse hybrid vectors
-    dense_1 = generate_random_dense_vector(16)
-    dense_2 = generate_random_dense_vector(16)
-    sparse_1 = generate_random_sparse_vector(100)
-    sparse_2 = generate_random_sparse_vector(100)
+    dense_1 = generate_random_dense_vector(DENSE_DIMENSION)
+    dense_2 = generate_random_dense_vector(DENSE_DIMENSION)
+    sparse_1 = generate_random_sparse_vector(SPARSE_VOCAB_SIZE)
+    sparse_2 = generate_random_sparse_vector(SPARSE_VOCAB_SIZE)
 
     index.upsert(
         vectors=[
             {"id": "vec1", "values": dense_1, "metadata": {"genre": "drama"}, "sparse_values": sparse_1},
             {"id": "vec2", "values": dense_2, "metadata": {"genre": "action"}, "sparse_values": sparse_2},
         ],
-        namespace=namespace,
+        namespace=DEFAULT_NAMESPACE,
     )
 
-    # 2. Hybrid query (alpha=0.75 favors dense semantic similarity)
     q_dense, q_sparse = hybrid_score_norm(
-        generate_random_dense_vector(16),
-        generate_random_sparse_vector(100),
-        alpha=0.75,
+        generate_random_dense_vector(DENSE_DIMENSION),
+        generate_random_sparse_vector(SPARSE_VOCAB_SIZE),
+        alpha=DEFAULT_HYBRID_ALPHA,
     )
-    query_res = index.query(namespace=namespace, top_k=10, vector=q_dense, sparse_vector=q_sparse)
-    logger.info("Hybrid query response: %s", query_res)
+    query_res = index.query(
+        namespace=DEFAULT_NAMESPACE,
+        top_k=10,
+        vector=q_dense,
+        sparse_vector=q_sparse,
+    )
+    logger.info("混合檢索結果：%s", query_res)
 
-    # 3. Fetch, update metadata, and delete sample record
-    logger.info("Fetch vec1: %s", index.fetch(["vec1"], namespace=namespace))
-    index.update(id="vec1", values=dense_2, set_metadata={"type": "webdoc"}, namespace=namespace)
-    logger.info("Updated vec1: %s", index.fetch(["vec1"], namespace=namespace))
-    index.delete(ids=["vec2"], namespace=namespace)
-    logger.info("Deleted vec2 successfully.")
+    logger.info("查詢 vec1：%s", index.fetch(["vec1"], namespace=DEFAULT_NAMESPACE))
+    index.update(id="vec1", values=dense_2, set_metadata={"type": "webdoc"}, namespace=DEFAULT_NAMESPACE)
+    logger.info("更新後 vec1：%s", index.fetch(["vec1"], namespace=DEFAULT_NAMESPACE))
+    index.delete(ids=["vec2"], namespace=DEFAULT_NAMESPACE)
+    logger.info("已刪除示範向量 vec2")
 
 
 if __name__ == "__main__":

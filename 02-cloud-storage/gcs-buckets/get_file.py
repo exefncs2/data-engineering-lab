@@ -1,30 +1,31 @@
-"""CLI helper to download an object from a Google Cloud Storage bucket."""
+"""輕量單檔 CLI 工具：從 Google Cloud Storage 下載指定檔案。"""
 
 from __future__ import annotations
 
 import argparse
 import logging
+from pathlib import Path
 
 from google.cloud import storage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
-logger = logging.getLogger("gcs_download")
+logger = logging.getLogger(__name__)
 
 
-def download_blob(bucket_name: str, source_blob_name: str, destination_file_name: str) -> None:
-    """Download a single blob from GCS to a local path."""
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(source_blob_name)
-    blob.download_to_filename(destination_file_name)
-    logger.info("Downloaded gs://%s/%s -> %s", bucket_name, source_blob_name, destination_file_name)
+def download_blob(bucket_name: str, source_blob_name: str, destination_path: Path) -> None:
+    """下載單一 GCS 物件至指定本機路徑。"""
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+    client = storage.Client()
+    blob = client.bucket(bucket_name).blob(source_blob_name)
+    blob.download_to_filename(str(destination_path))
+    logger.info("已下載 gs://%s/%s -> %s", bucket_name, source_blob_name, destination_path)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Download a file from Google Cloud Storage")
-    parser.add_argument("--bucket", required=True, help="GCS bucket name")
-    parser.add_argument("--source", required=True, help="Blob path inside the bucket")
-    parser.add_argument("--dest", required=True, help="Local destination file path")
+    parser = argparse.ArgumentParser(description="從 Google Cloud Storage 下載單一檔案")
+    parser.add_argument("--bucket", required=True, help="GCS Bucket 名稱")
+    parser.add_argument("--source", required=True, help="Bucket 內的來源物件路徑")
+    parser.add_argument("--dest", required=True, type=Path, help="本機儲存路徑")
     return parser.parse_args()
 
 

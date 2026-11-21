@@ -1,58 +1,42 @@
-"""FastAPI upload gateway for Google Cloud Storage (GCS) buckets."""
+"""FastAPI 上傳閘道呼叫進入點。"""
 
 from __future__ import annotations
 
 import logging
-import os
-from pathlib import Path
-from typing import BinaryIO
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.staticfiles import StaticFiles
-from google.cloud import storage
+
+from config import GcsConfig, STATIC_DIR
+from storage_service import GcsStorageService
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(message)s")
-logger = logging.getLogger("gcs_upload_gateway")
-
-GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "")
 
 app = FastAPI(title="GCS Upload Gateway", version="1.0.0")
-
-static_dir = Path(__file__).resolve().parent / "static"
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
-def get_storage_client() -> storage.Client:
-    if GOOGLE_CREDENTIALS_PATH:
-        return storage.Client.from_service_account_json(GOOGLE_CREDENTIALS_PATH)
-    return storage.Client()
-
-
-def upload_to_gcs(file_obj: BinaryIO, bucket_name: str, destination_blob_name: str) -> str:
-    """Upload a file-like object to GCS and return the gs:// URI."""
-    client = get_storage_client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-    blob.upload_from_file(file_obj)
-    uri = f"gs://{bucket_name}/{destination_blob_name}"
-    logger.info("Uploaded object to %s", uri)
-    return uri
+def _get_storage_service() -> GcsStorageService:
+    """於請求邊界載入設定並建立儲存服務，設定異常時回傳明確錯誤。"""
+    try:
+        return GcsStorageService(GcsConfig.from_env())
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/upload")
 async def upload_file(
-    target_dir: str = Query(..., alias="dir", description="Target prefix inside the GCS bucket"),
+    target_dir: str = Query(..., alias="dir", description="目標 Bucket 內的子目錄前綴"),
     file: UploadFile = File(...),
-):
-    if not GCS_BUCKET_NAME:
-        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME environment variable is not set")
+) -> dict[str, str]:
+    """接收上傳檔案並轉存至 Google Cloud Storage。"""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="上傳檔案缺少有效檔名")
 
-    prefix = target_dir.strip("/")
-    blob_path = f"{prefix}/{file.filename}" if prefix else file.filename
-    uri = upload_to_gcs(file.file, GCS_BUCKET_NAME, blob_path)
-    return {"message": "File uploaded successfully.", "uri": uri}
+    service = _get_storage_service()
+    uri = service.upload_stream(file.file, target_dir=target_dir, filename=file.filename)
+    return {"message": "檔案上傳成功", "uri": uri}
 
 
 if __name__ == "__main__":
