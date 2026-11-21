@@ -21,7 +21,7 @@ postgres_conn = os.environ.get("postgres_conn")
 google_cloud_storage_conn = os.environ.get("google_cloud_storage_conn")
 dataset = os.environ.get("dataset_update")
 
-# 定義 DAG 的默認參數
+# 定義 DAG 的預設參數
 default_args = {
     'owner': 'admin',
     'depends_on_past': False,
@@ -40,7 +40,7 @@ with DAG(
     schedule_interval=timedelta(days=1),
     start_date=days_ago(1)
 ) as dag:
-    # BigQuery 任務：獲取資料集中的所有表格
+    # BigQuery 任務：取得資料集中的所有表格
     get_dataset_tables = BigQueryGetDatasetTablesOperator(
         task_id="get_dataset_tables",
         dataset_id=dataset,

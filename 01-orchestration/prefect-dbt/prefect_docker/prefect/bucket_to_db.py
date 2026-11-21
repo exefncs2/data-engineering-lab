@@ -30,7 +30,7 @@ connection = psycopg2.connect(
 def update_json(json_str):
     cursor = connection.cursor()
     
-    # 构建插入数据的SQL查询
+    # 構建插入資料的SQL查詢
     insert_query = sql.SQL(f"INSERT INTO {db_schema}.{json_origin_table} (data, insert_date) VALUES (%s, %s);")
     current_date = date.today().isoformat()
     cursor.execute(insert_query, (json_str,current_date))
@@ -43,10 +43,10 @@ def update_json(json_str):
 def clear_table(table_name):
     cursor = connection.cursor()
     
-    # 构建删除数据的SQL查询
+    # 構建刪除資料的SQL查詢
     delete_query = sql.SQL("DELETE FROM {}.{}").format(sql.Identifier(db_schema),sql.Identifier(table_name))
     
-    # 执行删除查询
+    # 執行刪除查詢
     cursor.execute(delete_query)
     connection.commit()
     cursor.close()
@@ -86,7 +86,7 @@ def get_json_with_GCPbucket():
 
 
 
-# 注册在应用程序关闭时执行的函数
+# 註冊在應用程序關閉時執行的函式
 @task
 def close_db_connection():
     connection.close()

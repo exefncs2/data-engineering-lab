@@ -17,7 +17,7 @@
 `docker pull ahanaio/prestodb-sandbox`
 <br>
 
-## 創建檔案(連線內容`為測試用，服務都已經開好)
+## 建立檔案(連線內容`為測試用，服務都已經開好)
 * 基本設定檔:config.properties
 <br>
 ```coordinator=true

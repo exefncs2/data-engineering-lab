@@ -16,4 +16,4 @@ services:
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
     command:
       - "bash"
-      - "/opt/airflow/start.sh"  # 这里运行 Shell 脚本
+      - "/opt/airflow/start.sh"  # 這裏運行 Shell 腳本

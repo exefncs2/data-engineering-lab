@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "-------------------------init--------------------------------"
-# 定义工作目录和初始化文件路径
+# 定義工作目錄和初始化文件路徑
 WORK_DIR=/opt/airflow/work
 INIT_FILE=$WORK_DIR/.init
 
@@ -30,14 +30,14 @@ if [ ! -f "$INIT_FILE" ]; then
     airflow db init    
 
     echo "==================================== end init ======================================="
-# 在操作完成后创建 .init 文件
-     # 获取当前日期和时间
+# 在操作完成後建立 .init 文件
+     # 取得當前日期和時間
     current_datetime=$(date)
     
-    # 获取启动容器的用户名
+    # 取得啓動容器的使用者名稱
     container_user=$(whoami)
     
-    # 记录启动时间、日期、记录者和用户到文件
+    # 記錄啓動時間、日期、記錄者和使用者到文件
     echo "Container started by $container_user on $current_datetime"
     
     echo "Container started by $container_user on $current_datetime" >> $INIT_FILE

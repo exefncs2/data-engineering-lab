@@ -37,13 +37,13 @@ npm run serve
 <template>
   <div>
     <h1>Vue 3 + Axios 範例</h1>
-    <p>點擊按鈕以獲取數據</p>
-    <button @click="getData">獲取數據</button>
+    <p>點擊按鈕以取得資料</p>
+    <button @click="getData">取得資料</button>
     <div v-if="loading">
       <p>正在載入中...</p>
     </div>
     <div v-else>
-      <h2>數據結果</h2>
+      <h2>資料結果</h2>
       <ul>
         <li v-for="item in data" :key="item.id">{{ item.name }}</li>
       </ul>

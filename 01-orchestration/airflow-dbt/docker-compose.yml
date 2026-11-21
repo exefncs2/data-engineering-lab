@@ -7,7 +7,7 @@ services:
         POSTGRES_PASSWORD: airflow
         POSTGRES_DB: airflow
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # 新增挂载 init.sql 文件
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # 新增掛載 init.sql 文件
     ports:
       - "5434:5432"
     restart: always
@@ -17,7 +17,7 @@ services:
     image: apache/airflow:slim-2.7.3-python3.9
     ports:
       - "5555:8080"
-      - "5432:5432" # 若已占用代表all_link_network 已經建立 刪除執行即可
+      - "5432:5432" # 若已佔用代表all_link_network 已經建立 刪除執行即可
     volumes:
       
       - ./airflow/dags:/opt/airflow/dags
@@ -65,7 +65,7 @@ services:
     depends_on:
       - postgres
     command:
-      -  /opt/airflow/work/start.sh  # 这里运行 Shell 脚本
+      -  /opt/airflow/work/start.sh  # 這裏運行 Shell 腳本
     entrypoint: 
       -  /opt/airflow/work/init.sh
     

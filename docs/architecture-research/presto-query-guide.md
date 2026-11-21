@@ -28,25 +28,25 @@ pip install 'pyhive[presto]'
 #示範用程式
 from pyhive import presto
 
-# 创建Presto连接
+# 建立Presto連接
 conn = presto.connect(
     host='127.0.0.1',
     port=8080
 )
 
-# 执行查询
+# 執行查詢
 query1 = "SHOW CATALOGS"
 query2 = "SHOW SCHEMAS from bigquery"
 query3 = "SHOW TABLES from bigquery.dataform"
 query4 = "SHOW COLUMNS from bigquery.dataform.fhir_patients_view"
 
-# 創建Presto游標
+# 建立Presto遊標
 cursor = conn.cursor()
 
 cursor.execute(query1)
 results1 = cursor.fetchall()
 
-# 处理查询结果
+# 處理查詢結果
 print('-----------CATALOGS--------------')
 for row1 in results1:
    print(row1)
@@ -70,7 +70,7 @@ for row4 in results4:
    print(row4)
 
 
-# 关闭连接
+# 關閉連接
 conn.close()
 ```
 

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import Mapped, mapped_column
-from .database import Base  # 假设你的 database.py 文件中定义了 Base
+from .database import Base  # 假設你的 database.py 文件中定義了 Base
 
 class Vector(Base):
     __tablename__ = "vectors"

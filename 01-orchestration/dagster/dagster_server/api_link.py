@@ -16,9 +16,9 @@ def call_api(api_host: str, api_port: str, api_path: str) -> Any:
     response = conn.getresponse()
     if response.status == 200:
         data = response.read().decode("utf-8")
-        return {"api_output": data}  # 返回輸出
+        return {"api_output": data}  # 回傳輸出
     else:
-        raise Exception(f"API 調用失敗，狀態碼：{response.status}")
+        raise Exception(f"API 呼叫失敗，狀態碼：{response.status}")
 
 @op(
     #ins={"api_host": In(str), "api_port": In(str), "api_path": In(str)},
@@ -34,9 +34,9 @@ def call_api2(api_host: str, api_port: str, api_path: str) -> Any:
     response = conn.getresponse()
     if response.status == 200:
         data = response.read().decode("utf-8")
-        return {"api_output": data}  # 返回輸出
+        return {"api_output": data}  # 回傳輸出
     else:
-        raise Exception(f"API 調用失敗，狀態碼：{response.status}")
+        raise Exception(f"API 呼叫失敗，狀態碼：{response.status}")
 
 @op(
     #ins={"api_host": In(str), "api_port": In(str), "api_path": In(str)},
@@ -52,9 +52,9 @@ def call_api3(api_host: str, api_port: str, api_path: str) -> Any:
     response = conn.getresponse()
     if response.status == 200:
         data = response.read().decode("utf-8")
-        return {"api_output": data}  # 返回輸出
+        return {"api_output": data}  # 回傳輸出
     else:
-        raise Exception(f"API 調用失敗，狀態碼：{response.status}")
+        raise Exception(f"API 呼叫失敗，狀態碼：{response.status}")
 
 
 
@@ -73,10 +73,10 @@ def api_sensor(context):
     # 根據你的需求判斷是否觸發
     should_trigger = True  
     if should_trigger:
-        # 如果條件滿足，返回一個 RunRequest 來觸發作業運行
+        # 如果條件滿足，回傳一個 RunRequest 來觸發作業運行
         yield RunRequest(run_key=None, run_config=None, tags=None)
     else:
-        # 如果條件不滿足，返回 None
+        # 如果條件不滿足，回傳 None
         yield None
 
 

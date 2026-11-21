@@ -13,4 +13,4 @@ FROM {{ ref('base_table_organization') }}
 {% if is_incremental() %}
 where create_time > (select max(create_time) from {{ this }})
 {% endif %}
-    --並未標示完整只能依文體猜測使用的值
+    --並未標示完整隻能依文體猜測使用的值

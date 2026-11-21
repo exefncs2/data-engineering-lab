@@ -35,7 +35,7 @@ dag = DAG(
 # 定義 API 的 URL
 api_point = 'work01'
 
-# 創建一個 HttpSensor 任務，用於檢查 API 是否可用
+# 建立一個 HttpSensor 任務，用於檢查 API 是否可用
 
 api_task = SimpleHttpOperator(
     task_id='call_api_task',
@@ -46,7 +46,7 @@ api_task = SimpleHttpOperator(
     dag=dag,
 )
 
-# 創建一個 PythonOperator 任務，用於解析 HTTP 回傳的狀態碼
+# 建立一個 PythonOperator 任務，用於解析 HTTP 回傳的狀態碼
 parse_response_task = PythonOperator(
     task_id='parse_response_task',
     python_callable=get_http_response_code,

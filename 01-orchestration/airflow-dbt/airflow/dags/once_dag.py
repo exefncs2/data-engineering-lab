@@ -32,14 +32,14 @@ with DAG(
     trigger_getdata_dag = TriggerDagRunOperator(
     task_id='trigger_getdata_dag',
     trigger_dag_id='bigquery_to_postgres_dag',
-    conf={"schedule_interval": "0 0 * * *"},  # 新的调度间隔
+    conf={"schedule_interval": "0 0 * * *"},  # 新的調度間隔
     dag=dag,
 )
     
     trigger_dbt_dag = TriggerDagRunOperator(
     task_id='trigger_dbt_dag',
     trigger_dag_id='dbt',
-    conf={"schedule_interval": "0 0 * * *"},  # 新的调度间隔
+    conf={"schedule_interval": "0 0 * * *"},  # 新的調度間隔
     dag=dag,
 )
     trigger_getdata_dag >> trigger_dbt_dag

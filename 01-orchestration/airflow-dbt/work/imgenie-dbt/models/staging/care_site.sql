@@ -9,4 +9,4 @@ address::json -> 'text'  as "location_id"
 ,create_time
 FROM {{ ref('base_table_organization') }}
 
-    --並未標示完整只能依文體猜測使用的值
+    --並未標示完整隻能依文體猜測使用的值

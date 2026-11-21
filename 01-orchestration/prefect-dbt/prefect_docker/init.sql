@@ -2,16 +2,16 @@ CREATE DATABASE prefect;
 
 CREATE ROLE prefect_role;
 
--- 授予角色 "prefect_role" 超级用户权限（最大权限）
+-- 授予角色 "prefect_role" 超級使用者權限（最大權限）
 ALTER ROLE prefect_role SUPERUSER;
 
--- 授予角色 "prefect_role" 创建数据库的权限
+-- 授予角色 "prefect_role" 建立資料庫的權限
 ALTER ROLE prefect_role CREATEDB;
 
--- 授予角色 "prefect_role" 连接到数据库的权限
+-- 授予角色 "prefect_role" 連接到資料庫的權限
 ALTER ROLE prefect_role CONNECTION LIMIT -1;
 
--- 创建一个用户 "prefect" 并设置密码，并分配给角色 "prefect_role"
+-- 建立一個使用者 "prefect" 並設置密碼，並分配給角色 "prefect_role"
 CREATE USER prefect WITH PASSWORD 'prefect';
 GRANT prefect_role TO prefect;
 
