@@ -1,28 +1,29 @@
-Welcome to your new dbt project!
+# dbt FHIR 轉 OMOP 拆分實驗說明
 
-### Using the starter project
+## 1. 基本說明
 
-Try running the following commands:
-- dbt run
-- dbt test
+由 FHIR 轉 OMOP 的資料拆分練習：先將 `p_origin` 的 `data` 欄位（FHIR JSON）拆分成 `row_data`，接著用 `base_table_macros` 拆成不同類別的總表（`models/sources`），再由 OMOP 表（`models/staging`）建構目標表。
+- **優點**：全拆分設計在有新欄位重跑時會自動帶入。
+- **缺點**：可能發生 OMOP 有該欄位但 FHIR 沒有，進而帶入錯誤。
+- 此篇 OMOP 表僅完成部分欄位，主要作為拆分方法之技術參考。
 
+## 2. 基本資料表（`vars` 設定）
 
-### 補充文件:
-可參考[建構文書](/read_file//DBT/demo/prefect_docker/demo/read_file/文書使用說明.md)的兩種
-- elementary [詳細](/read_file//DBT/demo/prefect_docker/demo/read_file/文書使用說明.md)
-- dbt_artifacts
+- `myrow_data: 'row_data'`：`row_data` 拆分表，將 JSON 拆成碎片化結構使用。
+- `myschema: 'dbt'`：目標 Schema 名稱。
+- `myorigin: 'p_origin'`：最基本的原始表，由 Bucket 直接把資料灌入，僅含兩個欄位：`data (jsonb)` 放整個 JSON 檔、`insert_date (date)` 記錄寫入日期。
 
+## 3. 補充文件
 
-### 基本table:
-vars上有設定的table
-  - myrow_data: 'row_data' >> row_data 拆分表能完整將json拆成碎片化使用
-  - myschema: 'dbt' >> schema 名稱
-  - myorigin: 'p_origin' >> 最基本的table 由bucket直接把資料灌入 只有兩個欄位 data(jsonb)放整個json檔 跟 insert_date(date)寫入日期
+可參考 [文書使用說明](./read_file/文書使用說明.md) 與 [edr 說明](./read_file/edr說明.md) 中的兩種外掛設定：
+- `elementary`
+- `dbt_artifacts`
 
+---
 
-### 基本說明:
-由FHIR轉OMOP，先由p_origin的data欄位為FHIR拆分成row_data然後用base_table_macros拆成不同類的總表(models/sources)在由OMOP表(models/staging)建構OMOP表
-優點:全拆分有新欄位重跑時會自動帶入
-缺點:可能OMOP有但FHIR沒有所以會帶入錯誤
+## 4. 正式使用方式
 
-此篇OMOP表並沒有完成但作為demo已能提供技術參考
+```bash
+dbt run
+dbt test
+```

@@ -1,4 +1,4 @@
-# Pinecore
+# Pinecone
 ## 建立第一個index
 ![Alt text](image.png)
 等待燈號變綠就能用了

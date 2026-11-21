@@ -14,8 +14,8 @@
 
 ### (1) 排程與 dbt 實作紀錄（`01-orchestration/`）
 各自獨立的小型容器與腳本實驗，記錄不同工具的實際設定與寫法：
-- **`airflow-dbt/`**：內含 `docker-compose.yml`、7 支 Airflow DAG（`bigquery_to_db.py`、`gcp_to_db.py`、`dbt_exec.py`、`dbt_update.py`、`once_dag.py` 等）、兩個 dbt 專案目錄（`imgenie-dbt`、`imgenie-dbt-update`，含 Elementary 產出報表範例），以及 `AIRFLOW_總體說明文件.md` 與 `api說明.md`。
-- **`airflow-basics/`**：Airflow Docker 基礎安裝檔（`airflow.cfg`、`start.sh`）與介面操作截圖說明（`使用說明.md`）。
+- **`airflow-dbt/`**：內含 `docker-compose.yml`、7 支 Airflow DAG（`bigquery_to_db.py`、`gcp_to_db.py`、`dbt_exec.py`、`dbt_update.py`、`once_dag.py` 等）、兩個 dbt 專案目錄（`imgenie-dbt`、`imgenie-dbt-update`，含 Elementary 產出報表範例），以及總體說明 `README.md` 與 `api說明.md`。
+- **`airflow-basics/`**：Airflow Docker 基礎安裝檔（`airflow.cfg`、`start.sh`）與介面操作截圖說明（`README.md`）。
 - **`dagster/`**：簡單的 Dagster 練習專案，包含 `assets.py`、`schedules.py`、`mydag.py`、呼叫外部 HTTP API 的 `api_link.py` 與 `test_assets.py`。
 - **`prefect-dbt/`**：Prefect + dbt 容器設定檔，內含從 GCS 讀取 JSON 寫入資料庫（`bucket_to_db.py`）、觸發 dbt CLI（`dbt_cil.py`）與註冊排程（`main.py`）的範例腳本。
 
