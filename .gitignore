@@ -162,3 +162,10 @@ cython_debug/
 # Node
 node_modules/
 **/node_modules/
+
+# Runtime & local artifacts
+.env
+.env.*
+!.env.example
+.nux/
+.telemetry/
