@@ -1,50 +1,47 @@
 # Data Engineering & Modern Data Stack Lab
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![Airflow](https://img.shields.io/badge/Apache%20Airflow-Orchestration-017CEE?logo=apacheairflow&logoColor=white)
-![dbt](https://img.shields.io/badge/dbt-Transformation-FF694B?logo=dbt&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
-![BigQuery](https://img.shields.io/badge/Google-BigQuery-4285F4?logo=googlebigquery&logoColor=white)
+這份 Repo 是我整理自己研究現代資料工程（Modern Data Stack）與相關工具時留下的**實作實驗與調研筆記集合**，涵蓋排程編排、dbt 資料轉換與品質監控、雲端儲存串接、RAG 實驗，以及多個分散式查詢引擎的比較紀錄。
 
-現代資料工程（Modern Data Stack）與 AI 檢索架構的實作實驗室。收錄從零建立至容器化的資料管線排程編排、dbt 資料轉換與品質監控、雲端儲存閘道、RAG／向量資料庫實驗，以及分散式 SQL 查詢引擎研究等筆記。
+## 1. 為什麼這樣整理這份 Repo
 
-## 專案架構總覽
+這些程式碼與筆記是不同時期為了驗證個別技術環節寫下來的 POC（概念驗證），原本全散在根目錄下、中英文夾雜。整理後依照資料工程的工作階段分成四塊，方便自己回頭翻找，也讓外部讀者能一眼看出每個子資料夾的目的：
+
+- **`01-orchestration/`（排程與轉換比較）**：實際把 Airflow、Prefect、Dagster 三套排程器分別跑過一輪，並對接 dbt 與 Elementary Data 觀察資料品質報表。
+  - **Airflow + dbt**：生態最完整、企業最常見，但本機容器啟動較重。
+  - **Prefect + dbt**：對原生 Python 函式最友善，寫起來最輕快。
+  - **Dagster**：從資料資產（Asset）與血緣角度切入，測試與依賴關係最直覺。
+- **`02-cloud-storage/`（雲端儲存串接）**：驗證在 GCP 環境下以 FastAPI 建上傳閘道寫入 GCS Bucket，並搭配獨立的二進位上傳／下載 CLI 工具；閘道服務拆成三檔分離，兩個單純 CLI 工具則維持單檔避免過度設計。
+- **`03-ai-rag/`（檢索與向量資料庫實驗）**：測試把 LangChain、GCP Secret Manager、PostgreSQL 與 OpenAI Embeddings 打包成套件結構，以及測試 Pinecone 的稠密＋稀疏混合加權檢索公式。
+- **`docs/`（查詢引擎與架構筆記）**：比較 Trino vs. Presto、Presto 接 BigQuery、Redshift 實測數據與 SQL 資料庫選型心得。
+
+---
+
+## 2. 目前定位與使用提醒
+
+- 本 Repo 的定位是**個人技術實驗室與筆記庫**，並非單一可一鍵啟動的完整產品；各子專案各自獨立，需進到對應資料夾依照其內部說明與 `.env.example` 啟動。
+- 所有範例皆已移除原本的帳密、IP 與正式專案名稱，僅保留去識別化設定範本。
+
+---
+
+## 3. 目錄與文件索引
 
 ```text
 data-engineering-lab/
 ├── 01-orchestration/
-│   ├── airflow-dbt/          # Airflow + dbt + Elementary Data + BigQuery Docker Compose 完整架構
-│   ├── airflow-basics/       # Airflow 基礎安裝與介面操作筆記
-│   ├── dagster/              # Dagster Asset 編排、Schedules 與測試範例
-│   └── prefect-dbt/          # Prefect + dbt Docker Compose 整合範本
+│   ├── airflow-dbt/          # Airflow + dbt + Elementary + BigQuery 容器整合
+│   ├── airflow-basics/       # Airflow 基礎安裝與介面筆記
+│   ├── dagster/              # Dagster Asset 編排、排程與測試範例
+│   └── prefect-dbt/          # Prefect + dbt 容器整合範本
 ├── 02-cloud-storage/
-│   └── gcs-buckets/          # FastAPI GCS 上傳閘道（三檔分離）與 CLI 下載／上傳小工具
+│   └── gcs-buckets/          # FastAPI GCS 上傳閘道（config / storage_service / main）與 CLI 工具
 ├── 03-ai-rag/
-│   ├── rag-chain/            # LangChain RAG 套件化實驗（含 DB / GCP Secret / OpenAI Embedding）
-│   └── vector-db/            # Pinecone Dense + Sparse Hybrid Search 實驗
+│   ├── rag-chain/            # LangChain RAG 套件化結構實驗
+│   └── vector-db/            # Pinecone Dense + Sparse 混合檢索腳本
 └── docs/
-    ├── architecture-research/ # Trino / Presto / BigQuery / Redshift / SQL 選型 / RAG / Vue 3 技術筆記
+    ├── architecture-research/ # Trino / Presto / BigQuery / Redshift / SQL 選型 / RAG / Vue 3 筆記
     └── system-proposals/      # OrbitCommune 系統架構構想（中／英）
 ```
 
-## 重點模組與文件索引
-
-### 1. 資料管線編排與轉換（`01-orchestration/`）
-- [**Airflow + dbt + Elementary (`airflow-dbt`)**](01-orchestration/airflow-dbt/)：包含 `bigquery_to_db`、`gcp_to_db`、`dbt_exec` DAGs、Docker Compose 部署與 Elementary 資料品質報表。
-- [**Dagster (`dagster`)**](01-orchestration/dagster/)：以 Software-Defined Assets 實作的排程與測試專案。
-- [**Prefect + dbt (`prefect-dbt`)**](01-orchestration/prefect-dbt/)：Prefect 容器化部署與 dbt 模型串接。
-
-### 2. 雲端儲存與 AI 檢索實驗（`02-cloud-storage/`、`03-ai-rag/`）
-- [**GCS Upload Gateway (`gcs-buckets`)**](02-cloud-storage/gcs-buckets/)：基於 FastAPI 的 Google Cloud Storage 上傳 API（`config.py` / `storage_service.py` / `main.py`）與單檔 CLI 工具。
-- [**RAG Chain (`rag-chain`)**](03-ai-rag/rag-chain/)：模組化 LangChain RAG 套件結構（核心設定、DB 操作、GCP Secret Manager、OpenAI Embeddings）。
-- [**Pinecone Hybrid Search (`vector-db`)**](03-ai-rag/vector-db/)：Dense + Sparse 混合向量加權檢索與 CRUD 範例。
-
-### 3. 架構研究文件（`docs/architecture-research/`）
-| 主題 | 文件 |
-| :--- | :--- |
-| **查詢引擎比較** | [Trino vs. Presto 比較表](docs/architecture-research/trino-vs-presto.md) · [Trino 安裝](docs/architecture-research/trino-installation.md) · [Presto 安裝](docs/architecture-research/presto-installation.md) |
-| **雲端資料倉儲** | [Presto 連接 BigQuery](docs/architecture-research/presto-bigquery-connector.md) · [Presto 查詢使用](docs/architecture-research/presto-query-guide.md) · [Redshift 測試結果](docs/architecture-research/redshift-benchmark.md) · [SQL 資料庫選型](docs/architecture-research/sql-database-selection.md) |
-| **LLM 與前端筆記** | [LangChain 筆記](docs/architecture-research/langchain-notes.md) · [RAG 系統架構](docs/architecture-research/rag-architecture.md) · [Vue 3 + Axios 筆記](docs/architecture-research/vue3-axios-notes.md) |
-
-## 安全與隱私聲明
-所有實驗程式皆已移除帳號、密碼、IP 與正式環境連線資訊，請依各模組的 `.env.example` 或 README 指示注入環境變數後使用。
+### 研究筆記快速連結
+- **查詢引擎與倉儲**：[Trino vs. Presto 比較](docs/architecture-research/trino-vs-presto.md) · [Trino 安裝](docs/architecture-research/trino-installation.md) · [Presto 安裝](docs/architecture-research/presto-installation.md) · [Presto 連接 BigQuery](docs/architecture-research/presto-bigquery-connector.md) · [Presto 查詢筆記](docs/architecture-research/presto-query-guide.md) · [Redshift 實測](docs/architecture-research/redshift-benchmark.md) · [SQL 資料庫選型](docs/architecture-research/sql-database-selection.md)
+- **LLM 與前端筆記**：[LangChain 筆記](docs/architecture-research/langchain-notes.md) · [RAG 系統架構](docs/architecture-research/rag-architecture.md) · [Vue 3 + Axios 筆記](docs/architecture-research/vue3-axios-notes.md)
